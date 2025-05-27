@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:streamio_mobile/pages/list_page.dart';
 
 void main() {
   runApp(MyApp());
@@ -13,8 +13,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String email = "";
-  String password = "";
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -29,17 +27,15 @@ class _MyAppState extends State<MyApp> {
           backgroundColor: Colors.blue,
           foregroundColor: Colors.white,
         ),
-        textTheme: GoogleFonts.poppinsTextTheme(
-          TextTheme(bodySmall: TextStyle(color: Colors.white)),
+        textTheme: TextTheme(
+          titleLarge: TextStyle(
+            color: Colors.green,
+          ), // couleur par défaut du texte dans TextField
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.orange,
             foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            // textStyle: TextStyle(fontSize: 24),
           ),
         ),
         inputDecorationTheme: InputDecorationTheme(
@@ -71,29 +67,35 @@ class _MyAppState extends State<MyApp> {
               spacing: 12,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Text(),
                 TextField(decoration: InputDecoration(labelText: "Email")),
-                Row(
-                  spacing: 12,
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        decoration: InputDecoration(labelText: "Password"),
-                        onChanged: (value) {
-                          setState(() {
-                            email = value;
-                          });
-                        },
+                IntrinsicHeight(
+                  child: Flex(
+                    direction: Axis.horizontal,
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          decoration: InputDecoration(labelText: "Password"),
+                        ),
                       ),
-                    ),
-                    SizedBox(
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: () {},
-                        child: Icon(Icons.check),
+                      SizedBox(
+                        height: 52,
+                        child: Builder(
+                          builder: (context) => ElevatedButton(
+                            onPressed: () {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ListPage(),
+                                ),
+                              );
+                            },
+                            style: ButtonStyle(),
+                            child: Icon(Icons.check),
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -101,19 +103,5 @@ class _MyAppState extends State<MyApp> {
         ),
       ),
     );
-  }
-}
-
-class ListPage extends StatefulWidget {
-  const ListPage({super.key});
-
-  @override
-  State<ListPage> createState() => _ListPageState();
-}
-
-class _ListPageState extends State<ListPage> {
-  @override
-  Widget build(BuildContext context) {
-    return const Placeholder();
   }
 }
