@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:streamio_mobile/pages/list_page.dart';
+import 'package:streamio_mobile/pages/login_page.dart';
+import 'package:streamio_mobile/service/http_service.dart';
 
 void main() {
+  HttpService.init();
   runApp(MyApp());
 }
 
@@ -36,6 +38,15 @@ class _MyAppState extends State<MyApp> {
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.orange,
             foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        ),
+        buttonTheme: ButtonThemeData(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+            side: BorderSide(width: 1, color: Colors.orange),
           ),
         ),
         inputDecorationTheme: InputDecorationTheme(
@@ -57,50 +68,31 @@ class _MyAppState extends State<MyApp> {
             borderRadius: BorderRadius.circular(8),
           ),
         ),
-      ),
-      home: Scaffold(
-        appBar: AppBar(title: Center(child: const Text('Streamio'))),
-        body: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: 500),
-            child: Column(
-              spacing: 12,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TextField(decoration: InputDecoration(labelText: "Email")),
-                IntrinsicHeight(
-                  child: Flex(
-                    direction: Axis.horizontal,
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          decoration: InputDecoration(labelText: "Password"),
-                        ),
-                      ),
-                      SizedBox(
-                        height: 52,
-                        child: Builder(
-                          builder: (context) => ElevatedButton(
-                            onPressed: () {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => ListPage(),
-                                ),
-                              );
-                            },
-                            style: ButtonStyle(),
-                            child: Icon(Icons.check),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+        dropdownMenuTheme: DropdownMenuThemeData(
+          menuStyle: MenuStyle(
+            backgroundColor: WidgetStatePropertyAll(Colors.transparent),
+            shape: WidgetStatePropertyAll(
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+          ),
+          textStyle: TextStyle(color: Colors.white),
+          inputDecorationTheme: InputDecorationTheme(
+            filled: true,
+            fillColor: Colors.grey[850],
+            border: OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.orangeAccent),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.orange, width: 2),
+              borderRadius: BorderRadius.circular(8),
             ),
           ),
         ),
+      ),
+      home: Scaffold(
+        appBar: AppBar(title: Center(child: const Text('Streamio'))),
+        body: LoginPage(),
       ),
     );
   }

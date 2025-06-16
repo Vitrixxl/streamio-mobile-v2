@@ -1,10 +1,10 @@
 class Device {
-  final String id;
-  final String name;
-  final int amount;
-  final String type;
-  final int price;
-  final DateTime createdAt;
+  late String id;
+  late String name;
+  late int amount;
+  late String type;
+  late int price;
+  late DateTime createdAt;
 
   Device({
     required this.id,
@@ -24,5 +24,15 @@ class Device {
       price: json["price"] as int,
       createdAt: DateTime.parse(json["createdAt"] as String),
     );
+  }
+  Map<String, dynamic> toObj() {
+    return {
+      'id': id,
+      'name': name,
+      'amount': amount,
+      'type': type,
+      'price': price,
+      'createdAt': createdAt.toIso8601String(),
+    };
   }
 }

@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:streamio_mobile/pages/list_page.dart';
+import 'package:streamio_mobile/service/http_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -9,11 +12,29 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  void login(BuildContext context) {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => ListPage()),
+  String? _errorMessage;
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+
+  void login(BuildContext context) async {
+    final resp = await HttpService.dio.post(
+      "/api/auth/sign-in/email",
+      data: {
+        'email': emailController.text,
+        'password': passwordController.text,
+      },
     );
+    if (resp.statusCode == 200) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => ListPage()),
+      );
+    } else {
+      setState(() {
+        final data = resp.data is String ? json.decode(resp.data) : resp.data;
+        _errorMessage = data["message"] ?? "Erreur inconnue";
+      });
+    }
   }
 
   @override
@@ -33,12 +54,37 @@ class _LoginPageState extends State<LoginPage> {
                   style: TextStyle(fontSize: 40),
                 ),
               ),
-              TextField(decoration: InputDecoration(labelText: "Email")),
-              TextField(decoration: InputDecoration(labelText: "Password")),
-              ElevatedButton(
-                child: Text("coucou"),
-                onPressed: () => login(context),
+              TextField(
+                decoration: InputDecoration(labelText: "Email"),
+                controller: emailController,
               ),
+              Flex(
+                direction: Axis.horizontal,
+                spacing: 12,
+                children: [
+                  Expanded(
+                    child: TextField(
+                      decoration: InputDecoration(labelText: "Password"),
+                      controller: passwordController,
+                      obscureText: true,
+                    ),
+                  ),
+                  SizedBox(
+                    height: 50,
+                    child: ElevatedButton(
+                      child: Icon(Icons.check),
+                      onPressed: () => login(context),
+                    ),
+                  ),
+                ],
+              ),
+              if (_errorMessage != null)
+                Center(
+                  child: Text(
+                    _errorMessage!,
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ),
             ],
           ),
         ),
