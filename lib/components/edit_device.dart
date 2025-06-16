@@ -1,4 +1,8 @@
+import 'dart:io';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:streamio_mobile/models/device.dart';
 import 'package:streamio_mobile/service/http_service.dart';
 
@@ -19,6 +23,10 @@ class _EditDeviceState extends State<EditDevice> {
   String? _errorMessage;
   final _types = ["micro", "camera", "casque"];
 
+  String? _imagePath; // chemin local de l’image
+
+  final ImagePicker _picker = ImagePicker();
+
   @override
   void initState() {
     super.initState();
@@ -27,6 +35,7 @@ class _EditDeviceState extends State<EditDevice> {
       _priceController.text = widget.device!.price.toString();
       _amountController.text = widget.device!.amount.toString();
       _currentType = widget.device!.type;
+      // _imagePath = widget.device!.image; // si tu as ce champ dans Device
     }
   }
 
@@ -34,7 +43,44 @@ class _EditDeviceState extends State<EditDevice> {
     return !(_nameController.text == "" ||
         _priceController.text == "" ||
         _amountController.text == "" ||
-        _currentType == "");
+        _currentType == "" ||
+        _imagePath == null ||
+        _imagePath == "");
+  }
+
+  Future<void> pickImage() async {
+    final XFile? pickedFile = await _picker.pickImage(
+      source: ImageSource.gallery,
+    );
+    if (pickedFile != null) {
+      setState(() {
+        _imagePath = pickedFile.path;
+      });
+    }
+  }
+
+  Future<String> uploadImage() async {
+    if (_imagePath == null) return "";
+    print("1");
+
+    final file = File(_imagePath!);
+    final fileName = file.path.split('/').last;
+
+    FormData formData = FormData.fromMap({
+      'image': await MultipartFile.fromFile(file.path, filename: fileName),
+    });
+
+    final response = await HttpService.dio.post(
+      "/api/devices/upload",
+      data: formData,
+      options: Options(contentType: 'multipart/form-data'),
+    );
+
+    if (response.statusCode != 200) {
+      return "";
+    }
+
+    return response.data['filepath'];
   }
 
   void edit() async {
@@ -44,6 +90,9 @@ class _EditDeviceState extends State<EditDevice> {
       });
       return;
     }
+
+    final uploadedPath = await uploadImage();
+
     final Device updatedDevice = Device(
       id: widget.device != null ? widget.device!.id : "",
       name: _nameController.text,
@@ -51,6 +100,7 @@ class _EditDeviceState extends State<EditDevice> {
       type: _currentType!,
       price: int.parse(_priceController.text),
       createdAt: widget.device?.createdAt ?? DateTime.now(),
+      image: uploadedPath,
     );
 
     if (widget.device != null) {
@@ -58,13 +108,9 @@ class _EditDeviceState extends State<EditDevice> {
         "/api/devices",
         data: updatedDevice.toObj(),
       );
-      print(resp);
     } else {
-      final resp = await HttpService.dio.post(
-        "/api/devices",
-        data: updatedDevice.toObj(),
-      );
-      print(resp);
+      print(updatedDevice.toObj());
+      await HttpService.dio.post("/api/devices", data: updatedDevice.toObj());
     }
 
     if (widget.onUpdate != null) {
@@ -73,9 +119,10 @@ class _EditDeviceState extends State<EditDevice> {
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 20),
+      padding: EdgeInsets.all(20),
       child: Column(
         spacing: 12,
         mainAxisSize: MainAxisSize.min,
@@ -96,7 +143,6 @@ class _EditDeviceState extends State<EditDevice> {
               labelText: 'Prix',
               border: OutlineInputBorder(),
             ),
-
             keyboardType: TextInputType.number,
             controller: _priceController,
           ),
@@ -110,12 +156,13 @@ class _EditDeviceState extends State<EditDevice> {
           ),
           DropdownButtonFormField(
             hint: Text("Type d'appareil"),
-
             value: _currentType,
-            items: _types.map((String type) {
-              return DropdownMenuItem<String>(value: type, child: Text(type));
-            }).toList(),
-
+            items: _types
+                .map(
+                  (String type) =>
+                      DropdownMenuItem<String>(value: type, child: Text(type)),
+                )
+                .toList(),
             onChanged: (String? type) {
               setState(() {
                 _currentType = type;
@@ -123,10 +170,48 @@ class _EditDeviceState extends State<EditDevice> {
             },
           ),
 
+          // Choix d’image
+          Row(
+            spacing: 12,
+            children: [
+              if (_imagePath != null)
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.orange, width: 2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(
+                      8,
+                    ), // même que dans BoxDecoration
+                    child: Image.file(
+                      File(_imagePath!),
+                      width: 50,
+                      height: 50,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.orange,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: IconButton(
+                  icon: Icon(Icons.image, color: Colors.white, size: 30),
+                  onPressed: pickImage,
+                  padding: EdgeInsets.all(12), // espace autour de l'icône
+                ),
+              ),
+            ],
+          ),
+
           if (_errorMessage != null)
-            Center(
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
               child: Text(_errorMessage!, style: TextStyle(color: Colors.red)),
             ),
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -137,7 +222,6 @@ class _EditDeviceState extends State<EditDevice> {
               ElevatedButton(
                 onPressed: () {
                   edit();
-                  // Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,

@@ -4,6 +4,7 @@ class Device {
   late int amount;
   late String type;
   late int price;
+  late String image;
   late DateTime createdAt;
 
   Device({
@@ -12,6 +13,7 @@ class Device {
     required this.amount,
     required this.type,
     required this.price,
+    required this.image,
     required this.createdAt,
   });
 
@@ -22,6 +24,7 @@ class Device {
       amount: json["amount"] as int,
       type: json["type"] as String,
       price: json["price"] as int,
+      image: json["image"] as String,
       createdAt: DateTime.parse(json["createdAt"] as String),
     );
   }
@@ -32,6 +35,7 @@ class Device {
       'amount': amount,
       'type': type,
       'price': price,
+      'image': image,
       'createdAt': createdAt.toIso8601String(),
     };
   }

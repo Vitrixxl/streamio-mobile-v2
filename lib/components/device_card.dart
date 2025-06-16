@@ -1,6 +1,8 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:streamio_mobile/models/device.dart';
 import 'package:streamio_mobile/service/http_service.dart';
+import 'package:streamio_mobile/utils/dio.dart';
 
 import 'edit_device.dart';
 
@@ -75,12 +77,18 @@ class _DeviceCardState extends State<DeviceCard> {
               ),
               child: LayoutBuilder(
                 builder: (context, constraints) {
-                  return Icon(
-                    Icons.image,
-                    size:
-                        constraints.maxWidth *
-                        0.6, // 60% de la largeur disponible
-                    color: Colors.orange,
+                  return Image.network(
+                    "http://localhost:3000/" + _device.image,
+                    width: 200,
+                    height: 200,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Icon(
+                      Icons.image,
+                      size:
+                          constraints.maxWidth *
+                          0.6, // 60% de la largeur disponible
+                      color: Colors.orange,
+                    ),
                   );
                 },
               ),
