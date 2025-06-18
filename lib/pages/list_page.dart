@@ -62,6 +62,7 @@ class _ListPageState extends State<ListPage> {
               padding: EdgeInsets.all(16),
               child: Wrap(
                 spacing: 16,
+                runSpacing: 16,
                 children: _devices
                     .map(
                       (item) =>
